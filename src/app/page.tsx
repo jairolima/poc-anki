@@ -1,101 +1,89 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from 'react';
+import CardDisplay from '../components/CardDisplay';
+import { Card } from '../lib/types';
+import { answerCard } from '../lib/scheduler';
+import { defaultConfig } from '../lib/config';
+import { englishCards } from '../lib/cards';
+
+const questions = [
+    "What is the translation of 'apple'?",
+    "How do you say 'book' in English?",
+    "Translate 'sun' to English.",
+    "What does 'car' mean in English?",
+    "How do you say 'house' in English?",
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [cards, setCards] = useState<Card[]>(englishCards);
+    const [reviewCards, setReviewCards] = useState<Card[]>([]); // Estado para cards em revisão
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    const handleAnswer = (ease: number) => {
+        const currentCard = cards[currentIndex];
+        const updatedCard = answerCard(currentCard, ease, defaultConfig);
+        const updatedCards = [...cards];
+
+        // Se a resposta for "difícil" (exemplo, vamos supor que ease=2) ou "deixe para mais tarde" (ease=3)
+        if (ease === 2 || ease === 3) {
+            // Remove o card do array principal e adiciona ao de revisão
+            updatedCards.splice(currentIndex, 1);
+            setReviewCards((prev) => [...prev, currentCard]);
+        } else {
+            // Atualiza o card normalmente
+            updatedCards[currentIndex] = updatedCard;
+        }
+
+        setCards(updatedCards);
+        
+        // Avança para a próxima pergunta, se houver
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % updatedCards.length);
+    };
+
+    return (
+        <>
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <CardDisplay
+                    card={cards[currentIndex]}
+                    question={questions[currentIndex]}
+                    onAnswer={handleAnswer}
+                />
+            </div>
+
+            {/* Lista de cards com explicação de cada atributo */}
+            <div className="p-8">
+                <h2 className="text-2xl font-bold mb-4 text-white">Lista de Cards</h2>
+                <ul className="space-y-4">
+                    {cards.map((card, index) => (
+                        <li key={index} className="bg-white p-4 shadow-md rounded-lg">
+                            <h3 className="text-xl font-semibold mb-2">Card {index + 1}</h3>
+                            <p><strong>Deck ID (did):</strong> {card.did} - ID do baralho ao qual o cartão pertence.</p>
+                            <p><strong>Estado (queue):</strong> {card.queue} - Indica o estado do cartão (0: Novo, 1: Aprendendo, 2: Revisão, 3: Reaprendendo, 4: Suspenso).</p>
+                            <p><strong>Próxima Revisão (due):</strong> {card.due ? new Date(card.due * 1000).toLocaleString() : 'Não agendado'} - Indica quando o cartão será revisado novamente.</p>
+                            <p><strong>Etapas Restantes (left):</strong> {card.left} - Número de etapas restantes no aprendizado.</p>
+                            <p><strong>Esquecimentos (lapses):</strong> {card.lapses} - Número de vezes que o cartão foi esquecido.</p>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {/* Lista de cards em revisão */}
+            <div className="p-8">
+                <h2 className="text-2xl font-bold mb-4 text-white">Cards em Revisão</h2>
+                <ul className="space-y-4">
+                    {reviewCards.map((card, index) => (
+                        <li key={index} className="bg-white p-4 shadow-md rounded-lg">
+                            <h3 className="text-xl font-semibold mb-2">Card em Revisão {index + 1}</h3>
+                            <p><strong>Deck ID (did):</strong> {card.did}</p>
+                            <p><strong>Estado (queue):</strong> {card.queue}</p>
+                            <p><strong>Próxima Revisão (due):</strong> {card.due ? new Date(card.due * 1000).toLocaleString() : 'Não agendado'}</p>
+                            <p><strong>Etapas Restantes (left):</strong> {card.left}</p>
+                            <p><strong>Esquecimentos (lapses):</strong> {card.lapses}</p>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </>
+    );
 }
