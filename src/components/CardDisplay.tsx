@@ -1,12 +1,12 @@
 import { Card } from '../lib/types';
 
 type CardDisplayProps = {
-    card: Card;
+    card?: Card;
     question: string;
     onAnswer: (ease: number) => void;
 };
 
-export default function CardDisplay({ card, question, onAnswer }: CardDisplayProps) {
+export default function CardDisplay({ question, onAnswer }: CardDisplayProps) {
     // Mapeamento dos rótulos e dos valores de facilidade correspondentes
     const easeLabels = [
         { label: 'Again', ease: 1 },
