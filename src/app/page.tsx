@@ -1,89 +1,63 @@
-"use client";
+"use client"
 
-import { useState } from 'react';
-import CardDisplay from '../components/CardDisplay';
-import { Card } from '../lib/types';
-import { answerCard } from '../lib/scheduler';
-import { defaultConfig } from '../lib/config';
-import { englishCards } from '../lib/cards';
-
-const questions = [
-    "What is the translation of 'apple'?",
-    "How do you say 'book' in English?",
-    "Translate 'sun' to English.",
-    "What does 'car' mean in English?",
-    "How do you say 'house' in English?",
-];
+import { useState } from "react";
+import { cards, Card } from "../data/cards";
+import { answerCard } from "../lib/scheduler";
 
 export default function Home() {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [cards, setCards] = useState<Card[]>(englishCards);
-    const [reviewCards, setReviewCards] = useState<Card[]>([]); // Estado para cards em revisão
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [cardList, setCardList] = useState<Card[]>(cards); // Especifica o tipo explicitamente
 
-    const handleAnswer = (ease: number) => {
-        const currentCard = cards[currentIndex];
-        const updatedCard = answerCard(currentCard, ease, defaultConfig);
-        const updatedCards = [...cards];
+  const handleAnswer = (ease: number) => {
+    // Faz uma cópia do card atual e garante que ele tenha todas as propriedades do tipo 'Card'
+    const updatedCard: any = answerCard(cardList[currentCardIndex], ease);
+    const newCardList = [...cardList];
+    newCardList[currentCardIndex] = updatedCard; // Atualiza o card modificado na lista
+    setCardList(newCardList);
+    setCurrentCardIndex((prevIndex) => (prevIndex + 1) % cardList.length); // Navega para o próximo card
+  };
 
-        // Se a resposta for "difícil" (exemplo, vamos supor que ease=2) ou "deixe para mais tarde" (ease=3)
-        if (ease === 2 || ease === 3) {
-            // Remove o card do array principal e adiciona ao de revisão
-            updatedCards.splice(currentIndex, 1);
-            setReviewCards((prev) => [...prev, currentCard]);
-        } else {
-            // Atualiza o card normalmente
-            updatedCards[currentIndex] = updatedCard;
-        }
+  const currentCard = cardList[currentCardIndex];
 
-        setCards(updatedCards);
-        
-        // Avança para a próxima pergunta, se houver
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % updatedCards.length);
-    };
+  return (
+    <div className="p-4 bg-white">
+      <h1 className="text-2xl font-bold">Prototipo comportamento cards</h1>
+      <div className="mt-4">
+        <p><strong>Pergunta:</strong> {currentCard.pergunta}</p>
+        <p><strong>Resposta:</strong> {currentCard.resposta}</p>
+        <p>ID do Cartão: {currentCard.id}</p>
+        <p>Fila: {currentCard.queue}</p>
+        <p>Data de Revisão: {new Date(currentCard.due).toLocaleString()}</p>
+        <p>Lapso: {currentCard.lapses}</p>
+        <p>Passos Restantes: {currentCard.left}</p>
+      </div>
+      <div className="mt-4 flex gap-4">
+        <button onClick={() => handleAnswer(1)} className="px-4 py-2 bg-red-500 text-white rounded">
+          Tentar Novamente
+        </button>
+        <button onClick={() => handleAnswer(2)} className="px-4 py-2 bg-yellow-500 text-white rounded">
+          Difícil
+        </button>
+        <button onClick={() => handleAnswer(3)} className="px-4 py-2 bg-blue-500 text-white rounded">
+          Bom
+        </button>
+        <button onClick={() => handleAnswer(4)} className="px-4 py-2 bg-green-500 text-white rounded">
+          Fácil
+        </button>
+      </div>
 
-    return (
-        <>
-            <div className="flex items-center justify-center h-screen bg-gray-100">
-                <CardDisplay
-                    card={cards[currentIndex]}
-                    question={questions[currentIndex]}
-                    onAnswer={handleAnswer}
-                />
-            </div>
-
-            {/* Lista de cards com explicação de cada atributo */}
-            <div className="p-8">
-                <h2 className="text-2xl font-bold mb-4 text-white">Lista de Cards</h2>
-                <ul className="space-y-4">
-                    {cards.map((card, index) => (
-                        <li key={index} className="bg-white p-4 shadow-md rounded-lg">
-                            <h3 className="text-xl font-semibold mb-2">Card {index + 1}</h3>
-                            <p><strong>Deck ID (did):</strong> {card.did} - ID do baralho ao qual o cartão pertence.</p>
-                            <p><strong>Estado (queue):</strong> {card.queue} - Indica o estado do cartão (0: Novo, 1: Aprendendo, 2: Revisão, 3: Reaprendendo, 4: Suspenso).</p>
-                            <p><strong>Próxima Revisão (due):</strong> {card.due ? new Date(card.due * 1000).toLocaleString() : 'Não agendado'} - Indica quando o cartão será revisado novamente.</p>
-                            <p><strong>Etapas Restantes (left):</strong> {card.left} - Número de etapas restantes no aprendizado.</p>
-                            <p><strong>Esquecimentos (lapses):</strong> {card.lapses} - Número de vezes que o cartão foi esquecido.</p>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            {/* Lista de cards em revisão */}
-            <div className="p-8">
-                <h2 className="text-2xl font-bold mb-4 text-white">Cards em Revisão</h2>
-                <ul className="space-y-4">
-                    {reviewCards.map((card, index) => (
-                        <li key={index} className="bg-white p-4 shadow-md rounded-lg">
-                            <h3 className="text-xl font-semibold mb-2">Card em Revisão {index + 1}</h3>
-                            <p><strong>Deck ID (did):</strong> {card.did}</p>
-                            <p><strong>Estado (queue):</strong> {card.queue}</p>
-                            <p><strong>Próxima Revisão (due):</strong> {card.due ? new Date(card.due * 1000).toLocaleString() : 'Não agendado'}</p>
-                            <p><strong>Etapas Restantes (left):</strong> {card.left}</p>
-                            <p><strong>Esquecimentos (lapses):</strong> {card.lapses}</p>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </>
-    );
+      <div className="grid grid-cols-1 gap-4">
+        {cardList.map((card: Card) => (
+          <div key={card.id} className="border p-4 rounded shadow">
+            <h2 className="text-lg font-bold">{card.pergunta}</h2>
+            <p><strong>Resposta:</strong> {card.resposta}</p>
+            <p><strong>Vence em:</strong> {new Date(card.due).toLocaleString()}</p>
+            <p><strong>Fila:</strong> {card.queue}</p>
+            <p><strong>Lapses:</strong> {card.lapses}</p>
+            <p><strong>Etapas Restantes:</strong> {card.left}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
