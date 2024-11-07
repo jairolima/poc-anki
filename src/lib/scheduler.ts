@@ -74,7 +74,7 @@ const handleRelearnCard = (card: Card, ease: number, currentTime: number, relear
 
 const handleRevCard = (card: Card, ease: number, currentTime: number): Card => {
   // Handle review card logic
-  const { hardMultiplier, easyBonus, initialEase } = deckConfig;
+  const { hardMultiplier, easyBonus } = deckConfig;
   if (ease === 1) { // Again
     return { ...card, lapses: card.lapses + 1, queue: "relearning", due: currentTime + 10 * 60 * 1000 };
   } else if (ease === 2) { // Hard

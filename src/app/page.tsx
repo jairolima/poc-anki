@@ -10,7 +10,10 @@ export default function Home() {
 
   const handleAnswer = (ease: number) => {
     // Faz uma cópia do card atual e garante que ele tenha todas as propriedades do tipo 'Card'
-    const updatedCard: any = answerCard(cardList[currentCardIndex], ease);
+    const updatedCard: Card = {
+      ...cardList[currentCardIndex],
+      ...answerCard(cardList[currentCardIndex], ease)
+    };
     const newCardList = [...cardList];
     newCardList[currentCardIndex] = updatedCard; // Atualiza o card modificado na lista
     setCardList(newCardList);
