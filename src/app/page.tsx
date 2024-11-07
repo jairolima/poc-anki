@@ -46,7 +46,8 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 mt-12">
+        <h1>Lista dos cards e seus comportamentos para teste:</h1>
         {cardList.map((card: Card) => (
           <div key={card.id} className="border p-4 rounded shadow">
             <h2 className="text-lg font-bold">{card.pergunta}</h2>
