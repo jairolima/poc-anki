@@ -1,7 +1,4 @@
-import { Card } from '../lib/types';
-
 type CardDisplayProps = {
-    card?: Card;
     question: string;
     onAnswer: (ease: number) => void;
 };
