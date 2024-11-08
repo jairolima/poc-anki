@@ -4,7 +4,7 @@ export const deckConfig = {
   lrnSteps: [5, 10, 1440],       // Passos de aprendizado (em minutos)
   relearnSteps: [10],            // Passos de reaprendizado (em minutos)
   graduatingInterval: 3,         // Intervalo para cartões graduarem (em dias)
-  easyInterval: 4,               // Intervalo para cartões fáceis (em dias)
+  easyInterval: 7,               // Intervalo para cartões fáceis (em dias)
   minInterval: 1,                // Intervalo mínimo (em dias)
   leechThreshold: 8,             // Limite de lapsos para marcar um cartão como "leech"
 
